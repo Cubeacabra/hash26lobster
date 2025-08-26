@@ -5,7 +5,7 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-	const size_t SIZE = 11; //Change to 1M for benchmarking, back to 11 to pass cases
+	const size_t SIZE = 16; //Change to 1M for benchmarking, back to 11 to pass cases
 	//Note the slight difference from the enum class in hash.h
 	enum MODE { LINEAR, CHAINING, DOUBLE }; //Add quadratic maybe
 	int mode = LINEAR;
