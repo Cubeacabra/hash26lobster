@@ -1,5 +1,6 @@
 #include "/public/read.h"
 #include "hash.h"
+#include "dubhash.h"
 #include <memory>
 #include <unistd.h>
 using namespace std;
