@@ -36,16 +36,74 @@ class LinearProbingHash final : public Hash<T,SIZE> { //This class cannot be inh
 	//RTTI Run Time Type Information - vtable
 	//Final turns this off if you get a LinearProbingHash& in a function parameter, it is devirtualized
 	void insert(T new_data) final override {
-		//Step 1 - Compute the initial bucket to try
 		size_t address = std::hash<T>{}(new_data) % SIZE;
-		//Step 2 - We will start at the bucket at "address" and then move to the right,
-		//  looping around to the start if necessary, to find first available bucket
-		//  Either an OPEN bucket or a DELETED bucket will do.
-		//TODO: Make this not infinite loop on a full hash table
-		while (status.at(address) == STATUS::FILLED)
+		int firstDeleted = -1;
+		int loops = SIZE;
+
+		while (loops > 0){
+			if (status.at(address) == STATUS::OPEN){
+				if (firstDeleted == - 1) {
+					data.at(address) = new_data;
+					status.at(address) = STATUS:: FILLED;
+				} else {
+					data.at(firstDeleted) = new_data;
+					status.at(firstDeleted) = STATUS::FILLED;
+				}
+				return;
+			} else if (status.at(address) == STATUS::DELETED && firstDeleted == -1) {
+				firstDeleted = address;
+			}else if(data.at(address) == new_data && status.at(address) == STATUS::FILLED) {
+					return;
+			}
 			address = (address+1)%SIZE; //Move one bucket to the right, looping around
-		//Ok, we've found an open spot, write the data in and mark it as filled
-		data.at(address) = new_data;
+			loops--;
+			}
+		if (firstDeleted != -1){
+			data.at(address) = new_data;
 		status.at(address) = STATUS::FILLED;
 	}
-	//YOU:
+	}
+	void remove(T old_data) override {
+		size_t address = std::hash<T>{}(old_data) % SIZE;
+	int loops = SIZE;
+
+	while (loops > 0){
+		if (data.at(address) == old_data && status.at(address) == STATUS::FILLED) {
+			status.at(address) = STATUS::DELETED;
+			return;
+		} else {
+			address = (address + 1) % SIZE;
+		}
+	loops--;
+	}
+}
+	bool search(T old_data) const override {
+		int loops = SIZE;
+		size_t address = std::hash<T>{}(old_data) % SIZE;
+			while (true) {
+				if(data.at(address) == old_data && status.at(address) == STATUS::FILLED) {
+					return true;
+				} else {
+					address = (address+1)%SIZE;
+					if(loops == 0){
+						return false;
+				} else {
+					loops--;
+				}
+			}
+	}
+};
+	void change(T old_data, T new_data) override {
+	size_t address = std::hash<T>{}(old_data) % SIZE;
+	int loops= SIZE;
+	while (loops > 0) {
+		if(data.at(address) == old_data && status.at(address) == STATUS::FILLED) {
+			data.at(address) = new_data;
+			return;
+		} else {
+			address = (address + 1) % SIZE;
+		}
+		loops--;
+	}
+	}
+};
